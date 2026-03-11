@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#1a1a2e" stroke="#4ade80" stroke-width="4"/>
+
+  <!-- Dino body -->
+  <ellipse cx="105" cy="130" rx="40" ry="28" fill="#4ade80"/>
+
+  <!-- Dino neck -->
+  <rect x="90" y="90" width="25" height="35" rx="12" fill="#4ade80"/>
+
+  <!-- Dino head -->
+  <ellipse cx="115" cy="82" rx="28" ry="22" fill="#4ade80"/>
+
+  <!-- Snout -->
+  <ellipse cx="138" cy="88" rx="14" ry="10" fill="#86efac"/>
+
+  <!-- Eye -->
+  <circle cx="120" cy="74" r="8" fill="white"/>
+  <circle cx="122" cy="74" r="5" fill="#1a1a2e"/>
+  <circle cx="124" cy="72" r="2" fill="white"/>
+
+  <!-- Nostril -->
+  <circle cx="144" cy="86" r="2" fill="#4ade80" opacity="0.7"/>
+
+  <!-- Teeth / smile -->
+  <path d="M130 93 Q136 98 142 93" stroke="#1a1a2e" stroke-width="2" fill="none"/>
+
+  <!-- Dino arm -->
+  <line x1="95" y1="115" x2="80" y2="128" stroke="#4ade80" stroke-width="8" stroke-linecap="round"/>
+  <line x1="80" y1="128" x2="74" y2="122" stroke="#4ade80" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Dino tail -->
+  <path d="M65 138 Q40 148 30 135 Q42 128 65 132" fill="#4ade80"/>
+
+  <!-- Dino legs -->
+  <rect x="88" y="152" width="16" height="22" rx="8" fill="#4ade80"/>
+  <rect x="110" y="152" width="16" height="22" rx="8" fill="#4ade80"/>
+
+  <!-- Feet -->
+  <ellipse cx="96" cy="173" rx="12" ry="6" fill="#86efac"/>
+  <ellipse cx="118" cy="173" rx="12" ry="6" fill="#86efac"/>
+
+  <!-- Heart -->
+  <path d="M148 55 C148 52 145 48 141 48 C138 48 136 50 135 52 C134 50 132 48 129 48 C125 48 122 52 122 55 C122 60 135 68 135 68 C135 68 148 60 148 55Z" fill="#f43f5e"/>
+
+  <!-- Spots on back -->
+  <circle cx="75" cy="125" r="5" fill="#86efac" opacity="0.6"/>
+  <circle cx="88" cy="118" r="4" fill="#86efac" opacity="0.6"/>
+
+  <!-- RexMatch text -->
+  <text x="100" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#4ade80">RexMatch</text>
+</svg>
