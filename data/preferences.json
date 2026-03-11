@@ -1,0 +1,337 @@
+{
+  "liked": [
+    {
+      "name": "Vlaďka21Open Profile",
+      "age": "21",
+      "bio": "Sometimes",
+      "distance": "Boost",
+      "interests": [
+        "Sometimes",
+        "On special occasions",
+        "Big time texter",
+        "In College",
+        "Show more",
+        "💘",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_0.png",
+      "decision": "like",
+      "timestamp": "2026-03-11T13:30:20.065Z"
+    },
+    {
+      "name": "Pavlína20Verified!Open Profile",
+      "age": "20",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_13.png",
+      "decision": "like",
+      "timestamp": "2026-03-11T13:31:10.028Z"
+    },
+    {
+      "name": "Pavlína20Verified!Open Profile",
+      "age": "20",
+      "bio": "Museums",
+      "distance": "Boost",
+      "interests": [
+        "Museums",
+        "Mountains",
+        "Mental Health Awareness",
+        "Music",
+        "Exhibition",
+        "Trivia",
+        "Concerts",
+        "Pub Quiz",
+        "Escape Rooms",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_14.png",
+      "decision": "like",
+      "timestamp": "2026-03-11T13:31:13.484Z"
+    },
+    {
+      "name": "Berta26Open Profile",
+      "age": "26",
+      "bio": "Museums",
+      "distance": "Boost",
+      "interests": [
+        "Museums",
+        "Mountains",
+        "Mental Health Awareness",
+        "Music",
+        "Exhibition",
+        "Trivia",
+        "Concerts",
+        "Pub Quiz",
+        "Escape Rooms",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_15.png",
+      "decision": "like",
+      "timestamp": "2026-03-11T13:31:19.276Z"
+    }
+  ],
+  "passed": [
+    {
+      "name": "Madalina18Open Profile",
+      "age": "18",
+      "bio": "Sagittarius",
+      "distance": "Boost",
+      "interests": [
+        "Sagittarius",
+        "Not sure yet",
+        "Video chatter",
+        "Touch",
+        "Show more",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_1.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:22.847Z"
+    },
+    {
+      "name": "Lea19Open Profile",
+      "age": "19",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_2.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:27.506Z"
+    },
+    {
+      "name": "Anička21Verified!Open Profile",
+      "age": "21",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "😍",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_3.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:32.228Z"
+    },
+    {
+      "name": "Monika24Verified!Open Profile",
+      "age": "24",
+      "bio": "Chceš potkat holku zblázněnou do sportu a zároveň  chtějící poznat nové lidi? Můžeme dát turnaj v tenise, ať tě poznám, jak reaguješ na prohru, anebo zajít na nějaký dobrý jídlo. 🎾🍔",
+      "distance": "Boost",
+      "interests": [
+        "💘",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_4.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:36.612Z"
+    },
+    {
+      "name": "Veronika20Verified!Open Profile",
+      "age": "20",
+      "bio": "Chceš potkat holku zblázněnou do sportu a zároveň  chtějící poznat nové lidi? Můžeme dát turnaj v tenise, ať tě poznám, jak reaguješ na prohru, anebo zajít na nějaký dobrý jídlo. 🎾🍔",
+      "distance": "Boost",
+      "interests": [
+        "🤔",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_5.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:39.743Z"
+    },
+    {
+      "name": "Melisaa29Open Profile",
+      "age": "29",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "😍",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_6.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:42.522Z"
+    },
+    {
+      "name": "Regan24Open Profile",
+      "age": "24",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "🤔",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_7.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:44.135Z"
+    },
+    {
+      "name": "Regan24Open Profile",
+      "age": "24",
+      "bio": "Sweet treats",
+      "distance": "Boost",
+      "interests": [
+        "Sweet treats",
+        "Musical theater",
+        "Binge-Watching TV shows",
+        "Live Music",
+        "Reading",
+        "Cafe hopping",
+        "Rom-coms",
+        "Shopping",
+        "Baking",
+        "Ice Cream",
+        "🤔",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_8.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:46.281Z"
+    },
+    {
+      "name": "Regan24Open Profile",
+      "age": "24",
+      "bio": "Sweet treats",
+      "distance": "Boost",
+      "interests": [
+        "Sweet treats",
+        "Musical theater",
+        "Binge-Watching TV shows",
+        "Live Music",
+        "Reading",
+        "Cafe hopping",
+        "Rom-coms",
+        "Shopping",
+        "Baking",
+        "Ice Cream",
+        "🤔",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_9.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:48.501Z"
+    },
+    {
+      "name": "Eliška19Open Profile",
+      "age": "19",
+      "bio": "Sweet treats",
+      "distance": "Boost",
+      "interests": [
+        "Sweet treats",
+        "Musical theater",
+        "Binge-Watching TV shows",
+        "Live Music",
+        "Reading",
+        "Cafe hopping",
+        "Rom-coms",
+        "Shopping",
+        "Baking",
+        "Ice Cream",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_10.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:53.248Z"
+    },
+    {
+      "name": "Kateřina20Open Profile",
+      "age": "20",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "😍",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_11.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:30:58.351Z"
+    },
+    {
+      "name": "Marie22Open Profile",
+      "age": "22",
+      "bio": "Non-smoker",
+      "distance": "Boost",
+      "interests": [
+        "Non-smoker",
+        "Sometimes",
+        "On special occasions",
+        "Dog",
+        "Show more",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_12.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:31:02.898Z"
+    },
+    {
+      "name": "Berta26Open Profile",
+      "age": "26",
+      "bio": "On special occasions",
+      "distance": "Boost",
+      "interests": [
+        "On special occasions",
+        "Non-smoker",
+        "Sometimes",
+        "Cat",
+        "Show more",
+        "Museums",
+        "Mountains",
+        "Mental Health Awareness",
+        "Music",
+        "Exhibition",
+        "Trivia",
+        "Concerts",
+        "Pub Quiz",
+        "Escape Rooms",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_16.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:31:31.700Z"
+    },
+    {
+      "name": "Andrea22Open Profile",
+      "age": "22",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_17.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:31:36.549Z"
+    },
+    {
+      "name": "Kajka20Verified!Open Profile",
+      "age": "20",
+      "bio": "On special occasions",
+      "distance": "Boost",
+      "interests": [
+        "On special occasions",
+        "Non-smoker",
+        "In College",
+        "Show more",
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_18.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:31:52.401Z"
+    },
+    {
+      "name": "Jana24Open Profile",
+      "age": "24",
+      "bio": null,
+      "distance": "Boost",
+      "interests": [
+        "HideKeyboard Shortcut"
+      ],
+      "screenshot": "/Users/lukashellesch/Desktop/REPOS/TinderBot/data/screenshots/profile_19.png",
+      "decision": "pass",
+      "timestamp": "2026-03-11T13:32:00.574Z"
+    }
+  ],
+  "totalTrained": 20
+}

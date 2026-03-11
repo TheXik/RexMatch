@@ -7,14 +7,15 @@
   "scripts": {
     "start": "node src/index.js",
     "swipe": "node src/index.js --mode=swipe",
+    "smart": "node src/index.js --mode=smart",
+    "train": "node src/index.js --mode=train",
     "chat": "node src/index.js --mode=chat",
     "full": "node src/index.js --mode=full",
-    "setup": "playwright install chromium"
+    "setup": "npx playwright install chromium"
   },
   "dependencies": {
     "playwright": "^1.40.0",
     "dotenv": "^16.3.1",
-    "anthropic": "^0.32.0",
     "chalk": "^5.3.0",
     "ora": "^8.0.1",
     "figlet": "^1.7.0"
