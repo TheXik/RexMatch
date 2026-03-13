@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { config } from './config.js';
-import { log, sleep, randomDelay } from './utils.js';
+import { log, sleep } from './utils.js';
 
 const PREFS_FILE = path.resolve('data/preferences.json');
 const SCREENSHOTS_DIR = path.resolve('data/screenshots');
@@ -10,7 +10,6 @@ export class ProfileAnalyzer {
   constructor(tinderPage, browserContext) {
     this.page = tinderPage;
     this.context = browserContext;
-    this.claudePage = null;
     this.preferences = { liked: [], passed: [], totalTrained: 0 };
   }
 
@@ -94,7 +93,9 @@ export class ProfileAnalyzer {
 
   async shouldLike() {
     const profile = await this.#scrapeProfile();
-    await this.#screenshotProfile(Date.now());
+    if (config.debug.screenshots) {
+      await this.#screenshotProfile(Date.now());
+    }
 
     // ── RULE 1: Check "Looking for" tags (highest priority) ──
     if (profile.lookingFor && profile.lookingFor.length > 0) {
@@ -130,13 +131,17 @@ export class ProfileAnalyzer {
       }
     }
 
-    // ── RULE 4: If no "Looking for" data, default to LIKE ──
-    // Most profiles without tags are still worth a shot
+    // ── RULE 4: If no "Looking for" data, fall back to configured like ratio ──
     if (!profile.lookingFor || profile.lookingFor.length === 0) {
-      return { decision: true, profile, reason: 'LIKE: no "Looking for" tags — giving benefit of the doubt' };
+      const shouldLike = Math.random() < config.swipe.likeRatio;
+      return {
+        decision: shouldLike,
+        profile,
+        reason: shouldLike ? 'LIKE: no tags (ratio)' : 'PASS: no tags (ratio)',
+      };
     }
 
-    // ── FALLBACK: like by default (be aggressive) ──
+    // ── FALLBACK: like (has "Looking for" tags that passed all checks) ──
     return { decision: true, profile, reason: 'LIKE: passed all checks' };
   }
 
@@ -254,158 +259,21 @@ export class ProfileAnalyzer {
   // SWIPE DETECTION (training mode)
   // ──────────────────────────────────────
 
-  async #waitForSwipe() {
-    return new Promise((resolve) => {
-      const handler = async (event) => {
-        // We detect the swipe via keyboard events or DOM changes
-      };
-
-      // Listen for keyboard shortcuts
-      const keyHandler = (key) => {
-        if (key === 'ArrowRight') resolve('like');
-        if (key === 'ArrowLeft') resolve('pass');
-      };
-
-      // Use page.evaluate to listen for keydown
-      this.page.evaluate(() => {
-        return new Promise((res) => {
-          const handler = (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-              document.removeEventListener('keydown', handler);
-              res(e.key === 'ArrowRight' ? 'like' : 'pass');
-            }
+  async #waitForSwipe(timeoutMs = 60000) {
+    return Promise.race([
+      this.page.evaluate(() =>
+        new Promise((res) => {
+          const h = (e) => {
+            if (e.key === 'ArrowRight') { document.removeEventListener('keydown', h); res('like'); }
+            if (e.key === 'ArrowLeft') { document.removeEventListener('keydown', h); res('pass'); }
           };
-          document.addEventListener('keydown', handler);
-        });
-      }).then(resolve);
-    });
-  }
-
-  // ──────────────────────────────────────
-  // TASTE PROFILE BUILDER
-  // ──────────────────────────────────────
-
-  #buildTasteProfile() {
-    const liked = this.preferences.liked;
-    const passed = this.preferences.passed;
-
-    const likedBios = liked.filter((p) => p.bio).map((p) => `  - ${p.name}: "${p.bio.substring(0, 80)}"`).slice(-10);
-    const passedBios = passed.filter((p) => p.bio).map((p) => `  - ${p.name}: "${p.bio.substring(0, 80)}"`).slice(-10);
-
-    const likedInterests = liked.flatMap((p) => p.interests || []);
-    const passedInterests = passed.flatMap((p) => p.interests || []);
-
-    const interestCounts = {};
-    likedInterests.forEach((i) => { interestCounts[i] = (interestCounts[i] || 0) + 1; });
-
-    const topInterests = Object.entries(interestCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8)
-      .map(([name, count]) => `${name} (${count}x)`);
-
-    const likeRatio = liked.length / (liked.length + passed.length);
-
-    return `Like ratio: ${(likeRatio * 100).toFixed(0)}% (${liked.length} liked / ${passed.length} passed)
-
-Recent LIKED profiles:
-${likedBios.join('\n') || '  (no bios recorded)'}
-
-Recent PASSED profiles:
-${passedBios.join('\n') || '  (no bios recorded)'}
-
-Interests the user tends to like: ${topInterests.join(', ') || 'not enough data'}`;
-  }
-
-  // ──────────────────────────────────────
-  // CLAUDE BROWSER INTEGRATION
-  // ──────────────────────────────────────
-
-  async #askClaude(prompt) {
-    await this.claudePage.bringToFront();
-
-    // Navigate to new chat directly (most reliable)
-    await this.claudePage.goto('https://claude.ai/new', { waitUntil: 'networkidle' });
-    await sleep(2000);
-
-    // Use JavaScript to set the input text (avoids click interception issues)
-    const inputSet = await this.claudePage.evaluate((text) => {
-      // Try contenteditable div first (claude.ai uses this)
-      const ce = document.querySelector('[contenteditable="true"]');
-      if (ce) {
-        ce.focus();
-        ce.textContent = text;
-        ce.dispatchEvent(new Event('input', { bubbles: true }));
-        return 'contenteditable';
-      }
-      // Try textarea
-      const ta = document.querySelector('textarea');
-      if (ta) {
-        ta.focus();
-        ta.value = text;
-        ta.dispatchEvent(new Event('input', { bubbles: true }));
-        return 'textarea';
-      }
-      return null;
-    }, prompt);
-
-    if (!inputSet) {
-      log.error('Could not find Claude input field');
-      return null;
-    }
-
-    await sleep(500);
-
-    // Try clicking send button with force, or press Enter
-    const sendBtn = await this.claudePage.$('button[aria-label="Send"], button[type="submit"], button:has(svg[data-icon="arrow-up"])');
-    if (sendBtn) {
-      await sendBtn.click({ force: true }).catch(() => {});
-    }
-    // Also press Enter as backup
-    await sleep(200);
-    await this.claudePage.keyboard.press('Enter');
-    await sleep(3000);
-
-    // Wait for Claude to finish responding
-    // Look for the streaming indicator to appear then disappear
-    try {
-      // Wait for response to start (look for stop button or any new content)
-      await this.claudePage.waitForFunction(() => {
-        const msgs = document.querySelectorAll('[data-testid="assistant-message"], [class*="response"], .prose, [data-message-author="assistant"]');
-        return msgs.length > 0;
-      }, { timeout: 15000 }).catch(() => {});
-
-      // Wait for streaming to finish (stop button disappears)
-      await sleep(2000);
-      await this.claudePage.waitForFunction(() => {
-        const stopBtn = document.querySelector('button[aria-label="Stop"]');
-        return !stopBtn || stopBtn.offsetParent === null;
-      }, { timeout: 30000 }).catch(() => {});
-    } catch {
-      await sleep(10000);
-    }
-    await sleep(1000);
-
-    // Extract response text
-    const responseText = await this.claudePage.evaluate(() => {
-      // Try multiple selectors for Claude's response
-      const selectors = [
-        '[data-testid="assistant-message"]',
-        '[data-message-author="assistant"]',
-        '.prose',
-        '.markdown',
-        '[class*="response"]',
-        '[class*="assistant"]',
-      ];
-      for (const sel of selectors) {
-        const els = document.querySelectorAll(sel);
-        if (els.length > 0) {
-          return els[els.length - 1].textContent?.trim();
-        }
-      }
-      return null;
-    });
-
-    return responseText;
+          document.addEventListener('keydown', h);
+        })
+      ),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Swipe timed out — no key press detected')), timeoutMs)
+      ),
+    ]);
   }
 
   // ──────────────────────────────────────
