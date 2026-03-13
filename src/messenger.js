@@ -7,6 +7,7 @@ export class Messenger {
     this.context = browserContext;
     this.claudePage = null;
     this.messagesSent = 0;
+    this.processedUrls = new Set(); // deduplicate across the session
   }
 
   async init() {
@@ -118,11 +119,10 @@ export class Messenger {
     if (!conversations) {
       log.info('Could not find conversation list. Trying link-based approach...');
 
-      // Fallback: find all message links
       const links = await this.page.$$('a[href*="/app/messages/"]');
       if (links.length > 0) {
         log.info(`Found ${links.length} conversations via links`);
-        return links.slice(0, 5); // Process max 5 at a time
+        return this.#deduplicateMatchEls(links);
       }
 
       return [];
@@ -130,7 +130,20 @@ export class Messenger {
 
     log.info(`Found conversations using selector: ${conversations.selector}`);
     const matchEls = await this.page.$$(conversations.selector);
-    return matchEls.slice(0, 5); // Max 5 per session to stay safe
+    return this.#deduplicateMatchEls(matchEls);
+  }
+
+  async #deduplicateMatchEls(els) {
+    const unique = [];
+    for (const el of els) {
+      const href = await el.getAttribute('href').catch(() => null)
+        ?? await el.$eval('a[href*="messages"]', (a) => a.getAttribute('href')).catch(() => null);
+      if (!href || this.processedUrls.has(href)) continue;
+      this.processedUrls.add(href);
+      unique.push(el);
+      if (unique.length >= 5) break;
+    }
+    return unique;
   }
 
   async #processConversation(matchEl) {
@@ -172,9 +185,11 @@ export class Messenger {
     await this.page.bringToFront();
     await humanDelay(3000, 8000); // Think about what to say
 
-    await this.#sendMessage(response);
-    this.messagesSent++;
-    log.like(`Sent message to ${matchName}: "${response.substring(0, 50)}..."`);
+    const sent = await this.#sendMessage(response);
+    if (sent) {
+      this.messagesSent++;
+      log.like(`Sent message to ${matchName}: "${response.substring(0, 50)}..."`);
+    }
   }
 
   async #getConversationHistory() {
@@ -455,29 +470,23 @@ RULES:
 
     if (!input) {
       log.error('Could not find message input');
-      return;
+      return false;
     }
 
     await this.page.click(input);
     await humanDelay(300, 800);
 
-    // Type at human speed with variable delays per character
-    for (const char of text) {
-      await this.page.keyboard.type(char, { delay: 0 });
-      // Variable typing speed: faster for common letters, slower for punctuation
-      const isPunctuation = /[.,!?;:]/.test(char);
-      const isSpace = char === ' ';
-      if (isPunctuation) {
-        await humanDelay(100, 300);
-      } else if (isSpace) {
-        await humanDelay(50, 150);
-      } else {
-        await humanDelay(30, 120);
-      }
+    // Type word-by-word (more natural than per-character and far fewer awaits)
+    const words = text.split(' ');
+    for (let i = 0; i < words.length; i++) {
+      const chunk = i < words.length - 1 ? words[i] + ' ' : words[i];
+      await this.page.keyboard.type(chunk, { delay: 40 });
+      await humanDelay(80, 250); // inter-word pause
     }
 
     await humanDelay(500, 2000); // Pause before sending (reviewing message)
     await this.page.keyboard.press('Enter');
     await humanDelay(1000, 3000);
+    return true;
   }
 }
