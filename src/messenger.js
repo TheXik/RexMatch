@@ -162,14 +162,10 @@ export class Messenger {
       }
     }
 
-    // Skip if we already double-texted (sent last 2+ messages in a row)
-    if (messages.length >= 2) {
-      const last = messages[messages.length - 1];
-      const secondLast = messages[messages.length - 2];
-      if (last.isMe && secondLast.isMe) {
-        log.info(`Already double-texted ${matchName}, waiting for reply...`);
-        return;
-      }
+    // Skip if the last message is already from me — wait for her reply first
+    if (messages.length > 0 && messages[messages.length - 1].isMe) {
+      log.info(`Last message was mine, waiting for ${matchName} to reply...`);
+      return;
     }
 
     // Simulate reading the conversation
@@ -359,7 +355,7 @@ ${taskLine}
 
 RULES:
 - Keep it SHORT (1-2 sentences, max 15 words ideally)
-- Write in the SAME LANGUAGE the girl uses (Czech, Slovak, or English). Match her vibe.
+- If she writes in English, reply in English. Otherwise always write in SLOVAK.
 - Be flirty, teasing, confident — like a guy who has options but is genuinely interested
 - Push the conversation toward MEETING UP (drinks, coffee, walk, hangout). Don't stay in texting limbo.
 - If she's being dry or not engaging, tease her about it playfully
