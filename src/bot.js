@@ -16,14 +16,14 @@ export class RexMatchBot {
     await this.#ensureSessionDir();
 
     this.context = await chromium.launchPersistentContext(
-      path.resolve('sessions/browser'),
+      path.resolve(config.browser.sessionDir),
       {
         headless: false,
         viewport: { width: 1280, height: 800 },
         userAgent:
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-        locale: 'cs-CZ',
-        timezoneId: 'Europe/Prague',
+        locale: config.browser.locale,
+        timezoneId: config.browser.timezone,
         args: [
           '--no-sandbox',
           '--disable-blink-features=AutomationControlled',
@@ -147,6 +147,7 @@ export class RexMatchBot {
         await humanDelay(500, 1500); // Read the popup first
         await el.click().catch(() => {});
         await humanDelay(300, 800);
+        break; // Re-evaluate from scratch after each dismissal
       }
     }
   }
@@ -209,10 +210,6 @@ export class RexMatchBot {
   }
 
   async #ensureSessionDir() {
-    try {
-      await fs.access('sessions/browser');
-    } catch {
-      await fs.mkdir('sessions/browser', { recursive: true });
-    }
+    await fs.mkdir(path.resolve(config.browser.sessionDir), { recursive: true });
   }
 }
