@@ -30,6 +30,7 @@ async function main() {
     // TRAIN MODE
     if (mode === 'train') {
       await bot.navigateToRecs();
+      await bot.dismissPopups();
       analyzer = new ProfileAnalyzer(bot.page, bot.context);
       await analyzer.init();
       const countArg = args.find((a) => a.startsWith('--count='));
