@@ -9,9 +9,9 @@ export function humanDelay(minMs, maxMs) {
   const stddev = (maxMs - minMs) / 6; // 99.7% within range
   let delay = gaussianRandom(mean, stddev);
   delay = Math.max(minMs, Math.min(maxMs, delay));
-  // Add occasional "distraction" pauses (5% chance of 2-8x longer)
+  // Add occasional "distraction" pauses (5% chance of 2-8x longer, capped at 45s)
   if (Math.random() < 0.05) {
-    delay *= 2 + Math.random() * 6;
+    delay = Math.min(delay * (2 + Math.random() * 6), 45000);
   }
   return sleep(Math.floor(delay));
 }
