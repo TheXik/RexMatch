@@ -1,3 +1,4 @@
+import fs from 'fs/promises';
 import { config } from './config.js';
 import { log, sleep, humanDelay } from './utils.js';
 
@@ -100,6 +101,7 @@ export class Swiper {
     }
 
     log.dino(`Swiping done! Liked: ${this.liked} | Passed: ${this.passed} 🦕`);
+    await this.#logSession(smart ? 'smart' : 'random');
     return { liked: this.liked, passed: this.passed };
   }
 
@@ -145,6 +147,22 @@ export class Swiper {
       return { name: name?.trim() };
     } catch {
       return null;
+    }
+  }
+
+  async #logSession(mode) {
+    try {
+      await fs.mkdir('data', { recursive: true });
+      const entry = JSON.stringify({
+        date: new Date().toISOString(),
+        mode,
+        liked: this.liked,
+        passed: this.passed,
+        errors: this.errors,
+      });
+      await fs.appendFile('data/sessions.log', entry + '\n');
+    } catch {
+      // Non-critical — don't crash the bot over a log write
     }
   }
 
