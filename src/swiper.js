@@ -1,5 +1,5 @@
 import { config } from './config.js';
-import { log, sleep, humanDelay, readingDelay } from './utils.js';
+import { log, sleep, humanDelay } from './utils.js';
 
 // Tinder limits: ~100 likes per 12 hours (free), ~200 (Gold/Platinum)
 const SAFE_SESSION_LIMIT = 40; // Never swipe more than 40 in one sitting
@@ -15,6 +15,7 @@ export class Swiper {
     this.errors = 0;
     this.consecutiveErrors = 0;
     this.sessionSwipes = 0;
+    this.outOfLikes = false;
   }
 
   async swipe(count = config.swipe.limit) {
@@ -38,6 +39,7 @@ export class Swiper {
 
       try {
         await this.#dismissPopups();
+        if (this.outOfLikes) break;
 
         // Simulate looking at the profile (scroll through photos, read bio)
         await this.#simulateProfileViewing();
@@ -147,6 +149,14 @@ export class Swiper {
   }
 
   async #dismissPopups() {
+    // Detect "out of likes" paywall first — no point retrying swipes
+    const outOfLikesEl = await this.page.$('[class*="likesExhausted"], [data-testid="out-of-likes"], [class*="outOfLikes"]').catch(() => null);
+    if (outOfLikesEl) {
+      log.warn('Out of likes for today. Stopping session to protect account.');
+      this.outOfLikes = true;
+      return;
+    }
+
     const selectors = [
       '[aria-label="Back to Tinder"]',
       'button[title="Not interested"]',
@@ -160,6 +170,7 @@ export class Swiper {
         await humanDelay(500, 1500); // Read popup before dismissing
         await el.click().catch(() => {});
         await humanDelay(300, 600);
+        break; // Re-evaluate after each click
       }
     }
   }
