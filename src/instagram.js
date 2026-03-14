@@ -99,20 +99,19 @@ export class InstagramMessenger {
     await this.#igGoto('https://www.instagram.com/direct/inbox/');
     await humanDelay(4000, 7000);
 
-    const threads = await this.#getThreads();
-    log.info(`Found ${threads.length} Instagram threads to evaluate`);
+    const threadCount = await this.#getThreads();
 
     let processed = 0;
-    for (const thread of threads) {
-      if (processed >= MAX_CONVERSATIONS_PER_RUN) {
-        log.info(`Reached ${MAX_CONVERSATIONS_PER_RUN} conversation limit for this run. Stopping.`);
-        break;
-      }
+    for (let i = 0; i < threadCount && processed < MAX_CONVERSATIONS_PER_RUN; i++) {
       try {
-        const replied = await this.#processThread(thread);
+        // Navigate back to inbox before each thread (in case we're inside a conversation)
+        if (i > 0) {
+          await this.#igGoto('https://www.instagram.com/direct/inbox/');
+          await humanDelay(2000, 4000);
+        }
+        const replied = await this.#processThreadByIndex(i);
         if (replied) {
           processed++;
-          // Much longer delay between conversations than Tinder — Instagram is stricter
           const delayMs = 120000 + Math.random() * 180000; // 2–5 min
           log.info(`Waiting ${Math.round(delayMs / 1000)}s before next conversation...`);
           await sleep(delayMs);
@@ -130,111 +129,139 @@ export class InstagramMessenger {
   async #getThreads() {
     await this.page.bringToFront();
 
-    // Wait for the inbox conversation list to render
+    // Wait for conversation rows to render — they contain avatar <img> elements
     log.info('Waiting for DM inbox to load...');
     try {
-      await this.page.waitForSelector(
-        'a[href*="/direct/t/"], div[role="listbox"], div[role="list"]',
-        { timeout: 15000 }
-      );
+      await this.page.waitForSelector('img[draggable="false"]', { timeout: 15000 });
     } catch {
-      log.warn('Inbox list did not appear within 15s — will try anyway');
+      log.warn('Inbox avatars did not appear within 15s — will try anyway');
     }
     await humanDelay(2000, 3000);
 
-    const threadData = await this.page.evaluate(() => {
-      // Strategy 1: direct thread links
-      let anchors = Array.from(document.querySelectorAll('a[href*="/direct/t/"]'));
-
-      // Strategy 2: any <a> inside the inbox area whose href contains a numeric thread id
-      if (anchors.length === 0) {
-        anchors = Array.from(document.querySelectorAll('a[href]')).filter((a) =>
-          /\/direct\/t\/\d+/.test(a.getAttribute('href') || '')
-        );
-      }
-
-      // Strategy 3: look for list items that behave like conversation rows
-      if (anchors.length === 0) {
-        const rows = Array.from(document.querySelectorAll('[role="listitem"], [role="option"]'));
-        for (const row of rows) {
-          const a = row.querySelector('a[href]');
-          if (a && /direct/.test(a.getAttribute('href') || '')) anchors.push(a);
-        }
-      }
-
-      return anchors.map((a) => {
-        const href = a.getAttribute('href');
-        const threadId = href?.match(/\/direct\/t\/([^/]+)/)?.[1] || href;
-        const nameEl = a.querySelector('[title], img[alt], span');
-        const name = nameEl?.getAttribute('title') || nameEl?.getAttribute('alt') || nameEl?.textContent?.trim() || 'them';
-        return { href, threadId, name: name.trim() };
-      }).filter((t) => t.threadId);
+    // Instagram renders conversations as clickable <div> rows (React click handlers,
+    // NOT <a> tags). Each row has: avatar <img>, name text, preview text, timestamp.
+    // We find them by locating all <img> elements that look like avatars, then walking
+    // up to their conversation-row container.
+    const threadCount = await this.page.evaluate(() => {
+      // Find all circular avatar images in the conversation list area
+      const imgs = Array.from(document.querySelectorAll('img[draggable="false"]'));
+      // Filter to avatars in the conversation sidebar (left half, reasonable size)
+      const avatars = imgs.filter((img) => {
+        const rect = img.getBoundingClientRect();
+        return rect.width >= 40 && rect.width <= 80 && rect.left < 500 && rect.top > 100;
+      });
+      return avatars.length;
     });
 
-    log.info(`Raw thread anchors found: ${threadData.length}`);
-
-    // Debug: if nothing found, dump all hrefs on page so we can fix selectors
-    if (threadData.length === 0) {
-      const debugInfo = await this.page.evaluate(() => {
-        const url = window.location.href;
-        const allLinks = Array.from(document.querySelectorAll('a[href]'))
-          .map((a) => a.getAttribute('href'))
-          .filter((h) => h && h.length > 1)
-          .slice(0, 30);
-        const roles = Array.from(document.querySelectorAll('[role]'))
-          .map((el) => `${el.tagName}[role="${el.getAttribute('role')}"]`)
-          .slice(0, 20);
-        return { url, allLinks, roles };
-      });
-      log.warn(`Current URL: ${debugInfo.url}`);
-      log.warn(`All links on page: ${debugInfo.allLinks.join(' | ')}`);
-      log.warn(`Role elements: ${debugInfo.roles.join(' | ')}`);
-    }
-
-    // Deduplicate by threadId and skip already-processed threads
-    const unique = [];
-    const seen = new Set();
-    for (const t of threadData) {
-      if (seen.has(t.threadId) || this.processedThreads.has(t.threadId)) continue;
-      seen.add(t.threadId);
-      unique.push(t);
-      if (unique.length >= MAX_CONVERSATIONS_PER_RUN * 2) break; // fetch a buffer
-    }
-    return unique;
+    log.info(`Found ${threadCount} conversation rows in inbox`);
+    return threadCount;
   }
 
-  async #processThread(thread) {
+  async #processThreadByIndex(index) {
     await this.page.bringToFront();
-    await humanDelay(800, 2000);
+    await humanDelay(500, 1000);
 
-    // Navigate to the thread URL directly (more reliable than clicking small list items)
-    try {
-      await this.page.goto(`https://www.instagram.com${thread.href}`, {
-        waitUntil: 'networkidle',
-        timeout: 30000,
+    // Re-find and click the conversation row by index each time
+    // (DOM can change between iterations)
+    const threadInfo = await this.page.evaluate((idx) => {
+      const imgs = Array.from(document.querySelectorAll('img[draggable="false"]'));
+      const avatars = imgs.filter((img) => {
+        const rect = img.getBoundingClientRect();
+        return rect.width >= 40 && rect.width <= 80 && rect.left < 500 && rect.top > 100;
       });
-    } catch {
-      await humanDelay(3000, 5000);
+
+      if (idx >= avatars.length) return null;
+
+      const avatar = avatars[idx];
+      // Walk up to find the clickable row container
+      let row = avatar;
+      for (let i = 0; i < 10; i++) {
+        row = row.parentElement;
+        if (!row) break;
+        const rect = row.getBoundingClientRect();
+        // The row should span most of the sidebar width
+        if (rect.width > 200 && rect.height > 50 && rect.height < 120) break;
+      }
+
+      // Extract name and preview from the row text
+      const spans = row ? Array.from(row.querySelectorAll('span')) : [];
+      const textSpans = spans
+        .map((s) => s.textContent?.trim())
+        .filter((t) => t && t.length > 0 && t.length < 100);
+
+      // First substantial text is usually the name
+      const name = textSpans.find((t) => t.length > 0 && t.length < 30 && !/^\d/.test(t)) || 'them';
+      // Check if preview starts with "Já:" (Czech for "Me:") — means we sent last
+      const preview = textSpans.find((t) => t.length > 5) || '';
+      const iSentLast = /^Já:/i.test(preview) || /^You:/i.test(preview);
+
+      return { name, preview, iSentLast };
+    }, index);
+
+    if (!threadInfo) {
+      log.warn(`Could not find conversation row at index ${index}`);
+      return false;
     }
+
+    log.info(`Thread ${index}: ${threadInfo.name} — "${threadInfo.preview.substring(0, 50)}"`);
+
+    // Skip threads where we sent the last message (visible from preview)
+    if (threadInfo.iSentLast) {
+      log.info(`Last message was mine for ${threadInfo.name}, skipping`);
+      return false;
+    }
+
+    // Click the conversation row
+    const clicked = await this.page.evaluate((idx) => {
+      const imgs = Array.from(document.querySelectorAll('img[draggable="false"]'));
+      const avatars = imgs.filter((img) => {
+        const rect = img.getBoundingClientRect();
+        return rect.width >= 40 && rect.width <= 80 && rect.left < 500 && rect.top > 100;
+      });
+      if (idx >= avatars.length) return false;
+
+      // Walk up to the clickable row
+      let row = avatars[idx];
+      for (let i = 0; i < 10; i++) {
+        row = row.parentElement;
+        if (!row) break;
+        const rect = row.getBoundingClientRect();
+        if (rect.width > 200 && rect.height > 50 && rect.height < 120) break;
+      }
+      if (row) { row.click(); return true; }
+      return false;
+    }, index);
+
+    if (!clicked) {
+      log.warn(`Could not click conversation ${threadInfo.name}`);
+      return false;
+    }
+
     await humanDelay(2000, 4000);
 
+    // Get the thread ID from the URL now that we're in the conversation
+    const threadId = this.page.url().match(/\/direct\/t\/([^/]+)/)?.[1] || `idx-${index}`;
+
+    if (this.processedThreads.has(threadId)) {
+      log.info(`Thread ${threadInfo.name} already processed, skipping`);
+      return false;
+    }
+
     const messages = await this.#getMessages();
-    const partnerName = thread.name !== 'them' ? thread.name : await this.#getPartnerName();
+    const partnerName = threadInfo.name !== 'them' ? threadInfo.name : await this.#getPartnerName();
 
     log.info(`Instagram chat with ${partnerName}: ${messages.length} messages`);
 
-    // Only reply if their message is the last one (don't double-text)
     if (messages.length === 0) {
       log.info(`No messages found in thread with ${partnerName}, skipping`);
       return false;
     }
     if (messages[messages.length - 1].isMe) {
       log.info(`Last message was mine in thread with ${partnerName}, waiting for reply`);
-      this.processedThreads.add(thread.threadId);
+      this.processedThreads.add(threadId);
       return false;
     }
 
-    // Simulate reading the conversation naturally
     const lastMsg = messages[messages.length - 1].text;
     log.info(`Last message from ${partnerName}: "${lastMsg.substring(0, 80)}"`);
     await readingDelay(lastMsg);
@@ -242,14 +269,13 @@ export class InstagramMessenger {
     const response = await this.#generateResponse(partnerName, messages);
     if (!response) return false;
 
-    // Back to Instagram, simulate thinking
     await this.page.bringToFront();
-    await humanDelay(5000, 12000); // Longer "thinking" pause than Tinder
+    await humanDelay(5000, 12000);
 
     const sent = await this.#sendMessage(response);
     if (sent) {
       this.messagesSent++;
-      this.processedThreads.add(thread.threadId);
+      this.processedThreads.add(threadId);
       await this.#saveProcessedLog();
       log.like(`Sent Instagram message to ${partnerName}: "${response.substring(0, 50)}..."`);
       return true;
