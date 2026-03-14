@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { RexMatchBot } from './bot.js';
 import { Swiper } from './swiper.js';
 import { Messenger } from './messenger.js';
+import { InstagramMessenger } from './instagram.js';
 import { ProfileAnalyzer } from './analyzer.js';
 import { log, sleep, humanDelay } from './utils.js';
 
@@ -23,9 +24,13 @@ async function main() {
 
   try {
     await bot.init();
-    await bot.login();
-    await humanDelay(2000, 4000);
-    await bot.dismissPopups();
+
+    // Instagram mode doesn't need Tinder login
+    if (mode !== 'instagram') {
+      await bot.login();
+      await humanDelay(2000, 4000);
+      await bot.dismissPopups();
+    }
 
     // TRAIN MODE
     if (mode === 'train') {
@@ -81,6 +86,12 @@ async function main() {
       await bot.navigateToMessages();
       const messenger = new Messenger(bot.page, bot.context);
       await messenger.processMatches();
+    }
+
+    // INSTAGRAM MODE
+    if (mode === 'instagram') {
+      const igMessenger = new InstagramMessenger(bot.page, bot.context);
+      await igMessenger.processInbox();
     }
 
     log.dino('All done! Rex had a great day 🦕❤️');

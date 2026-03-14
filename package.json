@@ -10,6 +10,7 @@
     "smart": "node src/index.js --mode=smart",
     "train": "node src/index.js --mode=train",
     "chat": "node src/index.js --mode=chat",
+    "instagram": "node src/index.js --mode=instagram",
     "full": "node src/index.js --mode=full",
     "setup": "npx playwright install chromium"
   },
